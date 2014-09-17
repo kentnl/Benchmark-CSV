@@ -240,7 +240,7 @@ One recurring observation I noticed is code run-time seems to have a very lop-si
   0
 
 Which suggests to me, that unlike many things people usually use statistics for,
-where you have a bunch of things evenly on both sides of the mode, code has an I<inherent> mininum run time,
+where you have a bunch of things evenly on both sides of the mode, code has an I<inherent> minimum run time,
 which you might see if your system has all factors in "ideal" conditions, and it has a closely following I<sub-optimal> but
 I<common> run time, which I imagine you see because the system can't deliver every cycle of code
 in perfect situations every time, even the kernel is selfish and says "Well, if I let your code have exactly 100% CPU for as

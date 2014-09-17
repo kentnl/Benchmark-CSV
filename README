@@ -86,7 +86,7 @@ RATIONALE.
 
     Which suggests to me, that unlike many things people usually use
     statistics for, where you have a bunch of things evenly on both sides of
-    the mode, code has an *inherent* mininum run time, which you might see
+    the mode, code has an *inherent* minimum run time, which you might see
     if your system has all factors in "ideal" conditions, and it has a
     closely following *sub-optimal* but *common* run time, which I imagine
     you see because the system can't deliver every cycle of code in perfect
