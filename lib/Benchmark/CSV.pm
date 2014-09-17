@@ -88,7 +88,10 @@ EOF
   },
   'times_system' => {
     start  => q[my @start = times],
-    return => q[my @stop = times; return ( \$name, sprintf '%f' , ( $stop[1] - $start[1]))],
+    return => <<'EOF',
+        my @stop = times;
+        return ( \$name, sprintf '%f' , ( $stop[1] - $start[1]));
+EOF
   },
 };
 
@@ -184,11 +187,12 @@ version 0.001000
 I've long found all the other benchmarking utilities well meaning, but easily confusing.
 
 My biggest misgiving is that they give you one, or two values which it has decided is "the time" your code took,
-whether its an average, a median, or some other algorithm, ( Such as in C<Benchmark::Dumb> ), they all amount to basically giving you a data point, which you have to take for granted.
+whether its an average, a median, or some other algorithm, ( Such as in C<Benchmark::Dumb> ), they all amount to basically giving
+you a data point, which you have to take for granted.
 
 That data point may also change wildly between test runs due to computer load or other factors.
 
-Essentially, the flaw as I see it, is trying to convey what is essential a I<spectrum> of results as a single point.
+Essentially, the flaw as I see it, is trying to convey what is essentially a I<spectrum> of results as a single point.
 
 They also run each test sequentially, as in:
 
@@ -215,9 +219,11 @@ perfectly the whole time.
 
 And the final numbers don't really seem to take that into consideration. 
 
-C<Benchmark::Dumb> at least gives you variation data, but its rather hard to compare and visualise the results it gives to gain meaningful insight.
+C<Benchmark::Dumb> at least gives you variation data, but its rather hard to compare and visualise the results it gives to gain
+meaningful insight.
 
-So, I looked to modelling the data differently, and happened to accidentally throw some hand-collected benchmark data into a Google Spreadsheet Histogram plot, and found it hugely enlightening on what was really going on.
+So, I looked to modelling the data differently, and happened to accidentally throw some hand-collected benchmark data into a
+Google Spreadsheet Histogram plot, and found it hugely enlightening on what was really going on.
 
 One recurring observation I noticed is code runtime seems to have a very lop-sided distribution
 
@@ -235,11 +241,14 @@ One recurring observation I noticed is code runtime seems to have a very lop-sid
 
 Which suggests to me, that unlike many things people usually use statitics for,
 where you have a bunch of things evenly on both sides of the mode, code has an I<inherent> mininum run time,
-which you might see if your system has all factors in "ideal" conditions, and it has a closely following I<sub-optimal> but I<common> run time, which I imagine you see because the system can't deliver every cycle of code
-in perfect situations every time, even the kernel is selfish and says "Well, if I let your code have exactly 100% CPU for as long as you wanted it, I doubt even kernel space would be able to do anything till you were quite done" 
+which you might see if your system has all factors in "ideal" conditions, and it has a closely following I<sub-optimal> but
+I<common> run time, which I imagine you see because the system can't deliver every cycle of code
+in perfect situations every time, even the kernel is selfish and says "Well, if I let your code have exactly 100% CPU for as
+long as you wanted it, I doubt even kernel space would be able to do anything till you were quite done" 
 So observing the minimum time C<AND> the median seem to me, useful for comparing algorithm efficiency.
 
-Observing the maximums is useful too, 
+Observing the maximums is useful too, however, those values trend towards being less useful, as they're likely to be impacted by
+CPU randomness slowing things down.
 
 =head1 METHODS
 
