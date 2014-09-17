@@ -18,7 +18,7 @@ use Path::Tiny qw(path);
 my $bundle = create_bundle('Example::Author::KENTNL');
 $bundle->configure;
 
-my @stopwords = (qw());
+my @stopwords = (qw( CSV ));
 for my $wordlist (@stopwords) {
   $bundle->add_or_append_policy_field( 'Documentation::PodSpelling' => ( 'stop_words' => $wordlist ) );
 }
@@ -27,6 +27,7 @@ for my $wordlist (@stopwords) {
 #  'Subroutines::ProhibitCallsToUndeclaredSubs' => ( 'exempt_subs' => 'String::Formatter::str_rf' ), );
 
 $bundle->remove_policy('ErrorHandling::RequireUseOfExceptions');
+
 #$bundle->remove_policy('CodeLayout::RequireUseUTF8');
 #$bundle->remove_policy('ErrorHandling::RequireCarping');
 #$bundle->remove_policy('NamingConventions::Capitalization');
