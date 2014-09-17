@@ -29,6 +29,10 @@ requires:
   strict: '0'
   utf8: '0'
   warnings: '0'
+resources:
+  bugtracker: https://github.com/kentnl/Benchmark-CSV/issues
+  homepage: https://github.com/kentnl/Benchmark-CSV
+  repository: https://github.com/kentnl/Benchmark-CSV.git
 version: '0.001000'
 x_BuiltWith:
   modules:
