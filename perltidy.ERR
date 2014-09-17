@@ -1,0 +1,5 @@
+
+There is no previous '(' to match a ')' on line 24
+24: ) or diag $@;
+    ^
+27:	To save a full .LOG file rerun with -g
