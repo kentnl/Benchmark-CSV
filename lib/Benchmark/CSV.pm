@@ -184,7 +184,7 @@ version 0.001000
 
 =head1 RATIONALE.
 
-I've long found all the other benchmarking utilities well meaning, but easily confusing.
+I've long found all the other bench-marking utilities well meaning, but easily confusing.
 
 My biggest misgiving is that they give you one, or two values which it has decided is "the time" your code took,
 whether its an average, a median, or some other algorithm, ( Such as in C<Benchmark::Dumb> ), they all amount to basically giving
@@ -214,18 +214,18 @@ They also run each test sequentially, as in:
 
 And that strikes me as incredibly prone to the batches getting different results due to CPU loading variations,
 such that, any benchmark run on this way on anything other than a perfectly idle processor
-without so much as an init subsystem stealing CPU time, and with your kernel delivering IO 
+without so much as an C<init> subsystem stealing CPU time, and with your kernel delivering IO 
 perfectly the whole time.
 
 And the final numbers don't really seem to take that into consideration. 
 
-C<Benchmark::Dumb> at least gives you variation data, but its rather hard to compare and visualise the results it gives to gain
+C<Benchmark::Dumb> at least gives you variation data, but its rather hard to compare and visualize the results it gives to gain
 meaningful insight.
 
-So, I looked to modelling the data differently, and happened to accidentally throw some hand-collected benchmark data into a
+So, I looked to modeling the data differently, and happened to accidentally throw some hand-collected benchmark data into a
 Google Spreadsheet Histogram plot, and found it hugely enlightening on what was really going on.
 
-One recurring observation I noticed is code runtime seems to have a very lop-sided distribution
+One recurring observation I noticed is code run-time seems to have a very lop-sided distribution
 
    |   ++
    |   |++
@@ -239,7 +239,7 @@ One recurring observation I noticed is code runtime seems to have a very lop-sid
  0 +-------------------------------------
   0
 
-Which suggests to me, that unlike many things people usually use statitics for,
+Which suggests to me, that unlike many things people usually use statistics for,
 where you have a bunch of things evenly on both sides of the mode, code has an I<inherent> mininum run time,
 which you might see if your system has all factors in "ideal" conditions, and it has a closely following I<sub-optimal> but
 I<common> run time, which I imagine you see because the system can't deliver every cycle of code

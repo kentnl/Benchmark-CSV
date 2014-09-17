@@ -19,7 +19,7 @@ SYNOPSIS
       $benchmark->run_iterations(100_000);
 
 RATIONALE.
-    I've long found all the other benchmarking utilities well meaning, but
+    I've long found all the other bench-marking utilities well meaning, but
     easily confusing.
 
     My biggest misgiving is that they give you one, or two values which it
@@ -55,22 +55,22 @@ RATIONALE.
     And that strikes me as incredibly prone to the batches getting different
     results due to CPU loading variations, such that, any benchmark run on
     this way on anything other than a perfectly idle processor without so
-    much as an init subsystem stealing CPU time, and with your kernel
+    much as an "init" subsystem stealing CPU time, and with your kernel
     delivering IO perfectly the whole time.
 
     And the final numbers don't really seem to take that into consideration.
 
     "Benchmark::Dumb" at least gives you variation data, but its rather hard
-    to compare and visualise the results it gives to gain meaningful
+    to compare and visualize the results it gives to gain meaningful
     insight.
 
-    So, I looked to modelling the data differently, and happened to
+    So, I looked to modeling the data differently, and happened to
     accidentally throw some hand-collected benchmark data into a Google
     Spreadsheet Histogram plot, and found it hugely enlightening on what was
     really going on.
 
-    One recurring observation I noticed is code runtime seems to have a very
-    lop-sided distribution
+    One recurring observation I noticed is code run-time seems to have a
+    very lop-sided distribution
 
        |   ++
        |   |++
@@ -85,7 +85,7 @@ RATIONALE.
       0
 
     Which suggests to me, that unlike many things people usually use
-    statitics for, where you have a bunch of things evenly on both sides of
+    statistics for, where you have a bunch of things evenly on both sides of
     the mode, code has an *inherent* mininum run time, which you might see
     if your system has all factors in "ideal" conditions, and it has a
     closely following *sub-optimal* but *common* run time, which I imagine
