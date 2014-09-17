@@ -22,6 +22,10 @@ examples/shuffle/plot.gnuplot
 examples/shuffle/shuffle.pl
 lib/Benchmark/CSV.pm
 maint/perlcritic.rc.gen.pl
+misc/Changes.deps
+misc/Changes.deps.all
+misc/Changes.deps.dev
+misc/Changes.deps.opt
 misc/perlcritic.deps
 perlcritic.rc
 t/00-compile/lib_Benchmark_CSV_pm.t
