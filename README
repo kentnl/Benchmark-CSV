@@ -3,7 +3,7 @@ NAME
     advanced processing.
 
 VERSION
-    version 0.001000
+    version 0.001001
 
 SYNOPSIS
       use Benchmark::CSV;
