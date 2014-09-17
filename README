@@ -38,13 +38,13 @@ RATIONALE.
 
       start testing ->
 
-        start test one -> 
+        start test one ->
 
         <-- end test one
 
         record data
 
-        start test one -> 
+        start test one ->
 
          <-- end test one
 

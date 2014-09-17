@@ -82,7 +82,7 @@ EOF
   'times_user' => {
     start  => q[my @start = times],
     return => <<'EOF',
-        my @stop = times; 
+        my @stop = times;
         return ( \$name, sprintf '%f' , ( $stop[0] - $start[0]))
 EOF
   },
@@ -198,13 +198,13 @@ They also run each test sequentially, as in:
 
   start testing ->
 
-    start test one -> 
+    start test one ->
 
     <-- end test one
 
     record data
 
-    start test one -> 
+    start test one ->
 
      <-- end test one
 
@@ -214,10 +214,10 @@ They also run each test sequentially, as in:
 
 And that strikes me as incredibly prone to the batches getting different results due to CPU loading variations,
 such that, any benchmark run on this way on anything other than a perfectly idle processor
-without so much as an C<init> subsystem stealing CPU time, and with your kernel delivering IO 
+without so much as an C<init> subsystem stealing CPU time, and with your kernel delivering IO
 perfectly the whole time.
 
-And the final numbers don't really seem to take that into consideration. 
+And the final numbers don't really seem to take that into consideration.
 
 C<Benchmark::Dumb> at least gives you variation data, but its rather hard to compare and visualize the results it gives to gain
 meaningful insight.
@@ -244,7 +244,7 @@ where you have a bunch of things evenly on both sides of the mode, code has an I
 which you might see if your system has all factors in "ideal" conditions, and it has a closely following I<sub-optimal> but
 I<common> run time, which I imagine you see because the system can't deliver every cycle of code
 in perfect situations every time, even the kernel is selfish and says "Well, if I let your code have exactly 100% CPU for as
-long as you wanted it, I doubt even kernel space would be able to do anything till you were quite done" 
+long as you wanted it, I doubt even kernel space would be able to do anything till you were quite done"
 So observing the minimum time C<AND> the median seem to me, useful for comparing algorithm efficiency.
 
 Observing the maximums is useful too, however, those values trend towards being less useful, as they're likely to be impacted by
