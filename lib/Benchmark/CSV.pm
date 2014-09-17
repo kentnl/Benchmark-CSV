@@ -9,7 +9,7 @@ our $VERSION = '0.001000';
 
 use Path::Tiny;
 use Carp qw( croak );
-use Time::HiRes qw( gettimeofday tv_interval );
+use Time::HiRes qw( gettimeofday tv_interval clock_gettime );
 use IO::Handle;
 use List::Util qw( shuffle );
 
@@ -55,18 +55,52 @@ sub add_instance {
   return;
 }
 
+my $timing_methods = {
+  'hires_wall' => {
+    start => q[my $start = [ gettimeofday ]],
+    stop  => q[tv_interval( $start, [ gettimeofday ])],
+  },
+  # This one is hard to use as a default due to linux things.
+  'hires_cputime_process' => {
+    # bits/time.h
+    # CLOCK_PROCESS_CPUTIME_ID = 2
+    start => q[my $start = clock_gettime(2)],
+    stop  => q[clock_gettime(2) - $start],
+  },
+  # These are all bad because they're very imprecise :(
+  'times' => {
+    start  => q[my @start = times],
+    return => q[my @stop = times; 
+    return ( \$name, sprintf '%f' , ( $stop[0]+$stop[1] )-($start[0]+$start[1]))],
+  },
+  'times_user' => {
+    start  => q[my @start = times],
+    return => q[my @stop = times; 
+    return ( \$name, sprintf '%f' , ( $stop[0] - $start[0]))],
+  },
+  'times_system' => {
+    start  => q[my @start = times],
+    return => q[my @stop = times; 
+    return ( \$name, sprintf '%f' , ( $stop[1] - $start[1]))],
+  },
+};
+
 sub _compile_timer {
   ## no critic (Variables::ProhibitUnusedVarsStricter)
-  my ( undef, $name, $code, $sample_size ) = @_;
+  my ( $self, $name, $code, $sample_size ) = @_;
   ## no critic (ValuesAndExpressions::RequireInterpolationOfMetachars);
   my $run_one = q[ $code->(); ];
   my $run_batch = join qq[\n], map { $run_one } 1 .. $sample_size;
+  $self->{timing_method} ||= 'hires_wall';
+  my ( $starter, $stopper, $return ) = map { $timing_methods->{ $self->{timing_method} }->{$_} } qw( start stop return );
+  $return ||= qq[ return ( \$name, sprintf '%f', $stopper ) ];
+
   my $sub;
   my $build_sub = <<"EOF";
   \$sub = sub {
-    my \$start = [ gettimeofday ];
+    $starter;
     $run_batch;
-    return ( \$name, sprintf '%f', tv_interval( \$start, [ gettimeofday ]) );
+    $return;
   };
   1
 EOF
@@ -137,6 +171,68 @@ version 0.001000
   $benchmark->add_instance( 'method_b' => sub {});
 
   $benchmark->run_iterations(100_000);
+
+=head1 RATIONALE.
+
+I've long found all the other benchmarking utilities well meaning, but easily confusing.
+
+My biggest misgiving is that they give you one, or two values which it has decided is "the time" your code took,
+whether its an average, a median, or some other algorithm, ( Such as in C<Benchmark::Dumb> ), they all amount to basically giving you a data point, which you have to take for granted.
+
+That data point may also change wildly between test runs due to computer load or other factors.
+
+Essentially, the flaw as I see it, is trying to convey what is essential a I<spectrum> of results as a single point.
+
+They also run each test sequentially, as in:
+
+  start testing ->
+
+    start test one -> 
+
+    <-- end test one
+
+    record data
+
+    start test one -> 
+
+     <-- end test one
+
+     record data
+
+  <-- stop testing.
+
+And that strikes me as incredibly prone to the batches getting different results due to CPU loading variations,
+such that, any benchmark run on this way on anything other than a perfectly idle processor
+without so much as an init subsystem stealing CPU time, and with your kernel delivering IO 
+perfectly the whole time.
+
+And the final numbers don't really seem to take that into consideration. 
+
+C<Benchmark::Dumb> at least gives you variation data, but its rather hard to compare and visualise the results it gives to gain meaningful insight.
+
+So, I looked to modelling the data differently, and happened to accidentally throw some hand-collected benchmark data into a Google Spreadsheet Histogram plot, and found it hugely enlightening on what was really going on.
+
+One recurring observation I noticed is code runtime seems to have a very lop-sided distribution
+
+   |   ++
+   |   |++
+   |   | |
+   |   | |
+   |   | |
+   |   | +++
+   |   |   |
+   |  ++   ++++++++
+   |  +           +++++++++++++++++++++++
+ 0 +-------------------------------------
+  0
+
+Which suggests to me, that unlike many things people usually use statitics for,
+where you have a bunch of things evenly on both sides of the mode, code has an I<inherent> mininum run time,
+which you might see if your system has all factors in "ideal" conditions, and it has a closely following I<sub-optimal> but I<common> run time, which I imagine you see because the system can't deliver every cycle of code
+in perfect situations every time, even the kernel is selfish and says "Well, if I let your code have exactly 100% CPU for as long as you wanted it, I doubt even kernel space would be able to do anything till you were quite done" 
+So observing the minimum time C<AND> the median seem to me, useful for comparing algorithm efficiency.
+
+Observing the maximums is useful too, 
 
 =head1 METHODS
 

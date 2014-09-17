@@ -18,6 +18,86 @@ SYNOPSIS
 
       $benchmark->run_iterations(100_000);
 
+RATIONALE.
+    I've long found all the other benchmarking utilities well meaning, but
+    easily confusing.
+
+    My biggest misgiving is that they give you one, or two values which it
+    has decided is "the time" your code took, whether its an average, a
+    median, or some other algorithm, ( Such as in "Benchmark::Dumb" ), they
+    all amount to basically giving you a data point, which you have to take
+    for granted.
+
+    That data point may also change wildly between test runs due to computer
+    load or other factors.
+
+    Essentially, the flaw as I see it, is trying to convey what is essential
+    a *spectrum* of results as a single point.
+
+    They also run each test sequentially, as in:
+
+      start testing ->
+
+        start test one -> 
+
+        <-- end test one
+
+        record data
+
+        start test one -> 
+
+         <-- end test one
+
+         record data
+
+      <-- stop testing.
+
+    And that strikes me as incredibly prone to the batches getting different
+    results due to CPU loading variations, such that, any benchmark run on
+    this way on anything other than a perfectly idle processor without so
+    much as an init subsystem stealing CPU time, and with your kernel
+    delivering IO perfectly the whole time.
+
+    And the final numbers don't really seem to take that into consideration.
+
+    "Benchmark::Dumb" at least gives you variation data, but its rather hard
+    to compare and visualise the results it gives to gain meaningful
+    insight.
+
+    So, I looked to modelling the data differently, and happened to
+    accidentally throw some hand-collected benchmark data into a Google
+    Spreadsheet Histogram plot, and found it hugely enlightening on what was
+    really going on.
+
+    One recurring observation I noticed is code runtime seems to have a very
+    lop-sided distribution
+
+       |   ++
+       |   |++
+       |   | |
+       |   | |
+       |   | |
+       |   | +++
+       |   |   |
+       |  ++   ++++++++
+       |  +           +++++++++++++++++++++++
+     0 +-------------------------------------
+      0
+
+    Which suggests to me, that unlike many things people usually use
+    statitics for, where you have a bunch of things evenly on both sides of
+    the mode, code has an *inherent* mininum run time, which you might see
+    if your system has all factors in "ideal" conditions, and it has a
+    closely following *sub-optimal* but *common* run time, which I imagine
+    you see because the system can't deliver every cycle of code in perfect
+    situations every time, even the kernel is selfish and says "Well, if I
+    let your code have exactly 100% CPU for as long as you wanted it, I
+    doubt even kernel space would be able to do anything till you were quite
+    done" So observing the minimum time "AND" the median seem to me, useful
+    for comparing algorithm efficiency.
+
+    Observing the maximums is useful too,
+
 METHODS
   "add_instance"
     Add a test block.
