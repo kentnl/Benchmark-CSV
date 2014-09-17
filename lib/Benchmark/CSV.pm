@@ -53,7 +53,7 @@ sub scale_values {
   my $nargs = ( my ( $self, $value ) = @_ );
   if ( $nargs >= 2 ) {
     croak 'Cant set scale_values after finalization' if $self->{finalized};
-    $self->{scale_values} = $value;
+    return ( $self->{scale_values} = $value );
   }
   return $self->{scale_values} if exists $self->{scale_values};
   return ( $self->{scale_values} = undef );
@@ -127,14 +127,35 @@ my $timing_methods = {
   },
 };
 
+=for Pod::Coverage timing_method
+
+=cut
+
+sub timing_method {
+  my $nargs = ( my ( $self, $method ) = @_ );
+  if ( $nargs >= 2 ) {
+    croak 'Cant add instances after execution/finalization' if $self->{finalized};
+    if ( not exists $timing_methods->{$method} ) {
+      croak "No such timing method $method";
+    }
+    return ( $self->{timing_method} = $method );
+  }
+  return $self->{timing_method} if $self->{timing_method};
+  return ( $self->{timing_method} = 'hires_wall' );
+}
+
+sub _timing_method {
+  my ($self) = @_;
+  return $timing_methods->{ $self->timing_method };
+}
+
 sub _compile_timer {
   ## no critic (Variables::ProhibitUnusedVarsStricter)
   my ( $self, $name, $code, $sample_size ) = @_;
   ## no critic (ValuesAndExpressions::RequireInterpolationOfMetachars);
   my $run_one = q[ $code->(); ];
   my $run_batch = join qq[\n], map { $run_one } 1 .. $sample_size;
-  $self->{timing_method} ||= 'hires_wall';
-  my ( $starter, $stopper, $diff ) = map { $timing_methods->{ $self->{timing_method} }->{$_} } qw( start stop diff );
+  my ( $starter, $stopper, $diff ) = map { $self->_timing_method->{$_} } qw( start stop diff );
   my $sub;
   if ( $self->per_second and $self->scale_values ) {
     $diff = "( ( $diff > 0 ) ? (( 1 / $diff ) * $sample_size ) : 0 )";
