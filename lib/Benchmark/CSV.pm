@@ -109,7 +109,6 @@ my $timing_methods = {
     diff  => q[ ( $stop - $start )],
   },
 
-
   # These are all bad because they're very imprecise :(
   'times' => {
     start => q[my (@start) = times],
@@ -138,10 +137,12 @@ sub _compile_timer {
   my ( $starter, $stopper, $diff ) = map { $timing_methods->{ $self->{timing_method} }->{$_} } qw( start stop diff );
   my $sub;
   if ( $self->per_second and $self->scale_values ) {
-    $diff =  "( ( $diff > 0 ) ? (( 1 / $diff ) * $sample_size ) : 0 )"
-  } elsif ( $self->per_second ) {
+    $diff = "( ( $diff > 0 ) ? (( 1 / $diff ) * $sample_size ) : 0 )";
+  }
+  elsif ( $self->per_second ) {
     $diff = "( ( $diff > 0  ) ? ( 1 / $diff ) : 0 )";
-  } elsif ( $self->scale_values ) {
+  }
+  elsif ( $self->scale_values ) {
     $diff = "( $diff /  $sample_size )";
   }
 
@@ -156,7 +157,7 @@ sub _compile_timer {
 EOF
   local $@ = undef;
   ## no critic (BuiltinFunctions::ProhibitStringyEval, Lax::ProhibitStringyEval::ExceptForRequire)
-  if ( not eval $build_sub ){
+  if ( not eval $build_sub ) {
     carp $build_sub;
     croak $@;
   }
