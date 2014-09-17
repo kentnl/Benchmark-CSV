@@ -102,7 +102,7 @@ sub run_iterations {
   }
   my @timer_names = keys %{$timers};
   for ( 1 .. ( $count / $sample_size ) ) {
-    $self->_write_result( { map { $timers->{$_}->() } shuffle @timer_names } );
+    $self->_write_result( +{ map { $timers->{$_}->() } shuffle @timer_names } );
   }
   $self->output_fh->flush;
   return;
