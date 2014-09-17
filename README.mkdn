@@ -32,31 +32,6 @@ That data point may also change wildly between test runs due to computer load or
 
 Essentially, the flaw as I see it, is trying to convey what is essentially a _spectrum_ of results as a single point.
 
-They also run each test sequentially, as in:
-
-    start testing ->
-
-      start test one ->
-
-      <-- end test one
-
-      record data
-
-      start test one ->
-
-       <-- end test one
-
-       record data
-
-    <-- stop testing.
-
-And that strikes me as incredibly prone to the batches getting different results due to CPU loading variations,
-such that, any benchmark run on this way on anything other than a perfectly idle processor
-without so much as an `init` subsystem stealing CPU time, and with your kernel delivering IO
-perfectly the whole time.
-
-And the final numbers don't really seem to take that into consideration.
-
 `Benchmark::Dumb` at least gives you variation data, but its rather hard to compare and visualize the results it gives to gain
 meaningful insight.
 
@@ -87,6 +62,10 @@ So observing the minimum time `AND` the median seem to me, useful for comparing 
 
 Observing the maximums is useful too, however, those values trend towards being less useful, as they're likely to be impacted by
 CPU randomness slowing things down.
+
+# RATIONALE FOR DUMMIES
+
+Graphs are pretty. I like graphs. Why not benchmark distribution graphs!?
 
 # METHODS
 

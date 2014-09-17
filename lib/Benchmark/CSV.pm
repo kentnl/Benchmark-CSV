@@ -8,7 +8,7 @@ package Benchmark::CSV;
 our $VERSION = '0.001000';
 
 use Path::Tiny;
-use Carp qw( croak );
+use Carp qw( croak carp );
 use Time::HiRes qw( gettimeofday tv_interval clock_gettime );
 use IO::Handle;
 use List::Util qw( shuffle );
@@ -45,6 +45,34 @@ sub sample_size {
   return ( $self->{sample_size} = 1 );
 }
 
+=for Pod::Coverage scale_values
+
+=cut
+
+sub scale_values {
+  my $nargs = ( my ( $self, $value ) = @_ );
+  if ( $nargs >= 2 ) {
+    croak 'Cant set scale_values after finalization' if $self->{finalized};
+    $self->{scale_values} = $value;
+  }
+  return $self->{scale_values} if exists $self->{scale_values};
+  return ( $self->{scale_values} = undef );
+}
+
+=for Pod::Coverage per_second
+
+=cut
+
+sub per_second {
+  my $nargs = ( my ( $self, $value ) = @_ );
+  if ( $nargs >= 2 ) {
+    croak 'Cant set per_second after finalization' if $self->{finalized};
+    $self->{per_second_values} = $value;
+  }
+  return $self->{per_second} if exists $self->{per_second};
+  return ( $self->{per_second} = undef );
+}
+
 sub add_instance {
   my $nargs = ( my ( $self, $name, $method ) = @_ );
   croak 'Too few arguments to ->add_instance( name => sub { })' if $nargs < 3;
@@ -59,7 +87,8 @@ my $timing_methods = {
   ## no critic (ValuesAndExpressions::RequireInterpolationOfMetachars);
   'hires_wall' => {
     start => q[my $start = [ gettimeofday ]],
-    stop  => q[tv_interval( $start, [ gettimeofday ])],
+    stop  => q[my $stop = [ gettimeofday ]],
+    diff  => q[tv_interval( $start, [ gettimeofday ])],
   },
 
   # This one is hard to use as a default due to linux things.
@@ -68,30 +97,33 @@ my $timing_methods = {
     # bits/time.h
     # CLOCK_PROCESS_CPUTIME_ID = 2
     start => q[my $start = clock_gettime(2)],
-    stop  => q[clock_gettime(2) - $start],
+    stop  => q[my $stop  = clock_gettime(2)],
+    diff  => q[ ( $stop - $start )],
+  },
+  'hires_cputime_thread' => {
+
+    # bits/time.h
+    # CLOCK_THREAD_CPUTIME_ID = 3
+    start => q[my $start = clock_gettime(3)],
+    stop  => q[my $stop  = clock_gettime(3)],
+    diff  => q[ ( $stop - $start )],
   },
 
   # These are all bad because they're very imprecise :(
   'times' => {
-    start  => q[my @start = times],
-    return => <<'EOF',
-        my @stop = times;
-        return ( \$name, sprintf '%f', ( $stop[0]+$stop[1] ) - ($start[0]+$start[1]) )
-EOF
+    start => q[my (@start) = times],
+    stop  => q[my (@stop)  = times],
+    diff  => q[ ( $stop[0]+$stop[1] ) - ( $start[0]+$start[1] ) ],
   },
   'times_user' => {
-    start  => q[my @start = times],
-    return => <<'EOF',
-        my @stop = times;
-        return ( \$name, sprintf '%f' , ( $stop[0] - $start[0]))
-EOF
+    start => q[my (@start) = times],
+    stop  => q[my (@stop)  = times],
+    diff  => q[ ( $stop[0] - $start[0] ) ],
   },
   'times_system' => {
-    start  => q[my @start = times],
-    return => <<'EOF',
-        my @stop = times;
-        return ( \$name, sprintf '%f' , ( $stop[1] - $start[1]));
-EOF
+    start => q[my (@start) = times],
+    stop  => q[my (@stop)  = times],
+    diff  => q[ ( $stop[1] - $start[1] ) ],
   },
 };
 
@@ -102,21 +134,33 @@ sub _compile_timer {
   my $run_one = q[ $code->(); ];
   my $run_batch = join qq[\n], map { $run_one } 1 .. $sample_size;
   $self->{timing_method} ||= 'hires_wall';
-  my ( $starter, $stopper, $return ) = map { $timing_methods->{ $self->{timing_method} }->{$_} } qw( start stop return );
-  $return ||= qq[ return ( \$name, sprintf '%f', $stopper ) ];
-
+  my ( $starter, $stopper, $diff ) = map { $timing_methods->{ $self->{timing_method} }->{$_} } qw( start stop diff );
   my $sub;
+  if ( $self->per_second and $self->scale_values ) {
+    $diff = "( ( $diff > 0 ) ? (( 1 / $diff ) * $sample_size ) : 0 )";
+  }
+  elsif ( $self->per_second ) {
+    $diff = "( ( $diff > 0  ) ? ( 1 / $diff ) : 0 )";
+  }
+  elsif ( $self->scale_values ) {
+    $diff = "( $diff /  $sample_size )";
+  }
+
   my $build_sub = <<"EOF";
   \$sub = sub {
     $starter;
     $run_batch;
-    $return;
+    $stopper;
+    return ( \$name, sprintf '%f', ( $diff ));
   };
   1
 EOF
   local $@ = undef;
   ## no critic (BuiltinFunctions::ProhibitStringyEval, Lax::ProhibitStringyEval::ExceptForRequire)
-  croak $@ unless eval $build_sub;
+  if ( not eval $build_sub ) {
+    carp $build_sub;
+    croak $@;
+  }
   return $sub;
 }
 
@@ -296,31 +340,6 @@ That data point may also change wildly between test runs due to computer load or
 
 Essentially, the flaw as I see it, is trying to convey what is essentially a I<spectrum> of results as a single point.
 
-They also run each test sequentially, as in:
-
-  start testing ->
-
-    start test one ->
-
-    <-- end test one
-
-    record data
-
-    start test one ->
-
-     <-- end test one
-
-     record data
-
-  <-- stop testing.
-
-And that strikes me as incredibly prone to the batches getting different results due to CPU loading variations,
-such that, any benchmark run on this way on anything other than a perfectly idle processor
-without so much as an C<init> subsystem stealing CPU time, and with your kernel delivering IO
-perfectly the whole time.
-
-And the final numbers don't really seem to take that into consideration.
-
 C<Benchmark::Dumb> at least gives you variation data, but its rather hard to compare and visualize the results it gives to gain
 meaningful insight.
 
@@ -353,5 +372,9 @@ So observing the minimum time C<AND> the median seem to me, useful for comparing
 
 Observing the maximums is useful too, however, those values trend towards being less useful, as they're likely to be impacted by
 CPU randomness slowing things down.
+
+=head1 RATIONALE FOR DUMMIES
+
+Graphs are pretty. I like graphs. Why not benchmark distribution graphs!?
 
 =end :blag
