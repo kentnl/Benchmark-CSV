@@ -52,10 +52,13 @@ sub add_instance {
   $self->{instances} ||= {};
   croak "Cant add instance $name more than once" if exists $self->{instances}->{$name};
   $self->{instances}->{$name} = $method;
+  return;
 }
 
 sub _compile_timer {
-  my ( $self, $name, $code, $sample_size ) = @_;
+  ## no critic (Variables::ProhibitUnusedVarsStricter)
+  my ( undef, $name, $code, $sample_size ) = @_;
+  ## no critic (ValuesAndExpressions::RequireInterpolationOfMetachars);
   my $run_one = q[ $code->(); ];
   my $run_batch = join qq[\n], map { $run_one } 1 .. $sample_size;
   my $sub;
@@ -67,7 +70,8 @@ sub _compile_timer {
   };
   1
 EOF
-  local $@;
+  local $@ = undef;
+  ## no critic (BuiltinFunctions::ProhibitStringyEval, Lax::ProhibitStringyEval::ExceptForRequire)
   croak $@ unless eval $build_sub;
   return $sub;
 }
