@@ -21,7 +21,6 @@ lib/Benchmark/CSV.pm
 maint/perlcritic.rc.gen.pl
 misc/perlcritic.deps
 perlcritic.rc
-perltidy.ERR
 t/00-compile/lib_Benchmark_CSV_pm.t
 t/00-report-prereqs.dd
 t/00-report-prereqs.t
