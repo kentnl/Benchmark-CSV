@@ -56,32 +56,33 @@ sub add_instance {
 }
 
 my $timing_methods = {
+  ## no critic (ValuesAndExpressions::RequireInterpolationOfMetachars);
   'hires_wall' => {
     start => q[my $start = [ gettimeofday ]],
     stop  => q[tv_interval( $start, [ gettimeofday ])],
   },
+
   # This one is hard to use as a default due to linux things.
   'hires_cputime_process' => {
+
     # bits/time.h
     # CLOCK_PROCESS_CPUTIME_ID = 2
     start => q[my $start = clock_gettime(2)],
     stop  => q[clock_gettime(2) - $start],
   },
+
   # These are all bad because they're very imprecise :(
   'times' => {
     start  => q[my @start = times],
-    return => q[my @stop = times; 
-    return ( \$name, sprintf '%f' , ( $stop[0]+$stop[1] )-($start[0]+$start[1]))],
+    return => q[my @stop = times; return ( \$name, sprintf '%f' , ( $stop[0]+$stop[1] )-($start[0]+$start[1]))],
   },
   'times_user' => {
     start  => q[my @start = times],
-    return => q[my @stop = times; 
-    return ( \$name, sprintf '%f' , ( $stop[0] - $start[0]))],
+    return => q[my @stop = times; return ( \$name, sprintf '%f' , ( $stop[0] - $start[0]))],
   },
   'times_system' => {
     start  => q[my @start = times],
-    return => q[my @stop = times; 
-    return ( \$name, sprintf '%f' , ( $stop[1] - $start[1]))],
+    return => q[my @stop = times; return ( \$name, sprintf '%f' , ( $stop[1] - $start[1]))],
   },
 };
 
