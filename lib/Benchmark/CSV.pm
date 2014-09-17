@@ -74,11 +74,17 @@ my $timing_methods = {
   # These are all bad because they're very imprecise :(
   'times' => {
     start  => q[my @start = times],
-    return => q[my @stop = times; return ( \$name, sprintf '%f' , ( $stop[0]+$stop[1] )-($start[0]+$start[1]))],
+    return => <<'EOF',
+        my @stop = times;
+        return ( \$name, sprintf '%f', ( $stop[0]+$stop[1] ) - ($start[0]+$start[1]) )
+EOF
   },
   'times_user' => {
     start  => q[my @start = times],
-    return => q[my @stop = times; return ( \$name, sprintf '%f' , ( $stop[0] - $start[0]))],
+    return => <<'EOF',
+        my @stop = times; 
+        return ( \$name, sprintf '%f' , ( $stop[0] - $start[0]))
+EOF
   },
   'times_system' => {
     start  => q[my @start = times],
