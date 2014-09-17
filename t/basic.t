@@ -30,7 +30,7 @@ my $lines = [ $csv->lines( { chomp => 1 } ) ];
 is( $lines->[0], 'x + y,x - y', "Header in place" );
 like( $lines->[1],  qr/\A\d+[.]\d+,\d+[.]\d+/msx, "Second line matches regex" );
 like( $lines->[-1], qr/\A\d+[.]\d+,\d+[.]\d+/msx, "Last line matches regex" );
-is( scalar @{$lines}, 10001, "Has 1 line per sample + header" );
+is( scalar @{$lines}, 1001, "Has 1 line per sample + header" );
 
 done_testing;
 
