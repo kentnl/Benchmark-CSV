@@ -138,6 +138,121 @@ version 0.001000
 
   $benchmark->run_iterations(100_000);
 
+=head1 METHODS
+
+=head2 C<add_instance>
+
+Add a test block.
+
+  ->add_instance( name => sub { } );
+
+B<NOTE:> You can only add test instances prior to executing the tests.
+
+After executing tests, the number of columns and the column headings become C<finalized>.
+
+This is because of how the CSV file is written in parallel with the test batches.
+
+CSV is written headers first, top to bottom, one column at a time.
+
+So adding a new column is impossible after the headers have been written without starting over.
+
+=head2 C<new>
+
+Create a benchmark object.
+
+  my $instance = Benchmark::CSV->new( \%hash );
+  my $instance = Benchmark::CSV->new( %hash  );
+
+  %hash = {
+    sample_size => # number of times to call each sub in a sample
+    output      => # A file path to write to
+    output_fh   => # An output filehandle to write to
+  };
+
+=head2 C<sample_size>
+
+The number of times to call each sub in a "Sample".
+
+A sample is a block of timed code.
+
+For instance:
+
+  ->sample_size(4);
+  ->add_instance( x => $y );
+  ->run_iterations(40);
+
+This will create a timer block similar to below.
+
+  my $start = time();
+  # Unrolled, because benchmarking indicated unrolling was faster.
+  $y->();
+  $y->();
+  $y->();
+  $y->();
+  return time() - $start;
+
+That block will then be called 10 times ( 40 total code executions batched into 10 groups of 4 )
+and return 10 time values.
+
+=head3 get:C<sample_size>
+
+  my $size = $bench->sample_size;
+
+Value will default to 1 if not passed during construction.
+
+=head3 set:C<sample_size>
+
+  $bench->sample_size(10);
+
+Can be performed at any time prior, but not after running tests.
+
+=head2 C<output_fh>
+
+An output C<filehandle> to write very sloppy C<CSV> data to.
+
+Results will be in Columns, sorted by column name alphabetically.
+
+C<output_fh> defaults to C<*STDOUT>, or opens a file passed to the constructor as C<output> for writing.
+
+=head3 get:C<output_fh>
+
+  my $fh = $bench->output_fh;
+
+Either *STDOUT or an opened C<filehandle>.
+
+=head3 set:C<output_fh>
+
+  $bench->output_fh( \*STDERR );
+
+Can be set at any time prior, but not after, running tests.
+
+=head2 C<run_iterations>
+
+Executes the attached tests C<n> times in batches of L<< C<sample_size>|/sample_size >>.
+
+  ->run_iterations( 10_000_000 );
+
+Because of how it works, simply spooling results at the bottom of the data file, you can call this method
+multiple times as necessary and inject more results.
+
+For instance, this could be used to give a progress report.
+
+  *STDOUT->autoflush(1);
+  print "[__________]\r[";
+  for ( 1 .. 10 ) {
+    $bench->run_iterations( 1_000_000 );
+    print "#";
+  }
+  print "]\n";
+
+This is also how you can do timed batches:
+
+  my $start = [gettimeofday];
+  # Just execute as much as possible until 10 seconds of wallclock pass.
+  while( tv_interval( $start, [ gettimeofday ]) < 10 ) {
+    $bench->run_iterations( 1_000 );
+  }
+
 =head1 AUTHOR
 
 Kent Fredric <kentnl@cpan.org>
