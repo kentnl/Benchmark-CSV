@@ -24,7 +24,7 @@ my $y = 7;
 $bench->add_instance( 'x + y' => sub { $x + $y } );
 $bench->add_instance( 'x - y' => sub { $x - $y } );
 
-$bench->run_iterations(1_000_000);
+$bench->run_iterations(100_000);
 
 my $lines = [ $csv->lines( { chomp => 1 } ) ];
 is( $lines->[0], 'x + y,x - y', "Header in place" );
