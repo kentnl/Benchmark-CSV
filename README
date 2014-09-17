@@ -1,0 +1,30 @@
+NAME
+    Benchmark::CSV - Report raw timing results in CSV-style format for
+    advanced processing.
+
+VERSION
+    version 0.001000
+
+SYNOPSIS
+      use Benchmark::CSV;
+
+      my $benchmark = Benchmark::CSV->new(
+        output => './test.csv',
+        sample_size => 10,
+      );
+
+      $benchmark->add_instance( 'method_a' => sub {});
+      $benchmark->add_instance( 'method_b' => sub {});
+
+      $benchmark->run_iterations(100_000);
+
+AUTHOR
+    Kent Fredric <kentnl@cpan.org>
+
+COPYRIGHT AND LICENSE
+    This software is copyright (c) 2014 by Kent Fredric
+    <kentfredric@gmail.com>.
+
+    This is free software; you can redistribute it and/or modify it under
+    the same terms as the Perl 5 programming language system itself.
+
