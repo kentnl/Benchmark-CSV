@@ -45,6 +45,10 @@ sub sample_size {
   return ( $self->{sample_size} = 1 );
 }
 
+
+
+
+
 sub scale_values {
   my $nargs = ( my ( $self, $value ) = @_ );
   if ( $nargs >= 2 ) {
@@ -54,6 +58,11 @@ sub scale_values {
   return $self->{scale_values} if exists $self->{scale_values};
   return ( $self->{scale_values} = undef );
 }
+
+
+
+
+
 sub per_second {
   my $nargs = ( my ( $self, $value ) = @_ );
   if ( $nargs >= 2 ) {
@@ -63,8 +72,6 @@ sub per_second {
   return $self->{per_second} if exists $self->{per_second};
   return ( $self->{per_second} = undef );
 }
-
-
 
 sub add_instance {
   my $nargs = ( my ( $self, $name, $method ) = @_ );
@@ -93,21 +100,29 @@ my $timing_methods = {
     stop  => q[my $stop  = clock_gettime(2)],
     diff  => q[ ( $stop - $start )],
   },
+  'hires_cputime_thread' => {
+
+    # bits/time.h
+    # CLOCK_THREAD_CPUTIME_ID = 3
+    start => q[my $start = clock_gettime(3)],
+    stop  => q[my $stop  = clock_gettime(3)],
+    diff  => q[ ( $stop - $start )],
+  },
 
   # These are all bad because they're very imprecise :(
   'times' => {
-    start => q[my @start = times],
-    stop  => q[my @stop =  times],
+    start => q[my (@start) = times],
+    stop  => q[my (@stop)  = times],
     diff  => q[ ( $stop[0]+$stop[1] ) - ( $start[0]+$start[1] ) ],
   },
   'times_user' => {
-    start => q[my @start = times],
-    stop  => q[my @stop =  times],
+    start => q[my (@start) = times],
+    stop  => q[my (@stop)  = times],
     diff  => q[ ( $stop[0] - $start[0] ) ],
   },
   'times_system' => {
-    start => q[my @start = times],
-    stop  => q[my @stop =  times],
+    start => q[my (@start) = times],
+    stop  => q[my (@stop)  = times],
     diff  => q[ ( $stop[1] - $start[1] ) ],
   },
 };
@@ -122,12 +137,14 @@ sub _compile_timer {
   my ( $starter, $stopper, $diff ) = map { $timing_methods->{ $self->{timing_method} }->{$_} } qw( start stop diff );
   my $sub;
   if ( $self->per_second and $self->scale_values ) {
-    $diff =  '(( 1 / ' . $diff . ') * ' . $sample_size . ')';
-  } elsif ( $self->per_second ) {
-    $diff = '( 1 / ' . $diff . ')';
-  } elsif ( $self->scale_values ) {
-    $diff = '(' . $diff . ' / ' . $sample_size . ')';
-  } 
+    $diff = "( ( $diff > 0 ) ? (( 1 / $diff ) * $sample_size ) : 0 )";
+  }
+  elsif ( $self->per_second ) {
+    $diff = "( ( $diff > 0  ) ? ( 1 / $diff ) : 0 )";
+  }
+  elsif ( $self->scale_values ) {
+    $diff = "( $diff /  $sample_size )";
+  }
 
   my $build_sub = <<"EOF";
   \$sub = sub {
@@ -140,7 +157,10 @@ sub _compile_timer {
 EOF
   local $@ = undef;
   ## no critic (BuiltinFunctions::ProhibitStringyEval, Lax::ProhibitStringyEval::ExceptForRequire)
-  croak $@ unless eval $build_sub;
+  unless ( eval $build_sub ) {
+    carp $build_sub;
+    croak $@;
+  }
   return $sub;
 }
 
@@ -367,6 +387,10 @@ This is also how you can do timed batches:
   while( tv_interval( $start, [ gettimeofday ]) < 10 ) {
     $bench->run_iterations( 1_000 );
   }
+
+=for Pod::Coverage scale_values
+
+=for Pod::Coverage per_second
 
 =head1 AUTHOR
 

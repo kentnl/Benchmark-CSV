@@ -20,6 +20,9 @@ examples/mkbatch/mkbatch.pl
 examples/mkbatch/plot.gnuplot
 examples/shuffle/plot.gnuplot
 examples/shuffle/shuffle.pl
+examples/vs_benchmark_pm/benchmark_pm.pl
+examples/vs_benchmark_pm/plot.gnuplot
+examples/vs_benchmark_pm/vs_benchmark_pm.pl
 lib/Benchmark/CSV.pm
 maint/perlcritic.rc.gen.pl
 misc/Changes.deps
