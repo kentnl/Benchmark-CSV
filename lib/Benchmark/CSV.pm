@@ -5,7 +5,7 @@ use utf8;
 
 package Benchmark::CSV;
 
-our $VERSION = '0.001001';
+our $VERSION = '0.001002';
 
 use Path::Tiny;
 use Carp qw( croak carp );
@@ -237,7 +237,7 @@ Benchmark::CSV - Report raw timing results in CSV-style format for advanced proc
 
 =head1 VERSION
 
-version 0.001001
+version 0.001002
 
 =head1 SYNOPSIS
 
