@@ -1,6 +1,6 @@
 Release history for Benchmark-CSV
 
-0.001001 2014-09-18T10:20:59Z
+0.001001 2014-09-18T10:21:56Z
  [Bugfix]
  - Dont require gettime, and if its not available, dont expose dependent methods
 

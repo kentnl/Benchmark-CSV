@@ -85,6 +85,8 @@ sub add_instance {
 
 # These are hard to use as a default due to linux things.
 my $hires_gettime_methods = {
+  ## no critic (ValuesAndExpressions::RequireInterpolationOfMetachars);
+
   'hires_cputime_process' => {
 
     # bits/time.h
