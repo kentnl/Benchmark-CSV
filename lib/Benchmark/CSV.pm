@@ -5,7 +5,7 @@ use utf8;
 
 package Benchmark::CSV;
 
-our $VERSION = '0.001001';
+our $VERSION = '0.001002';
 
 use Path::Tiny;
 use Carp qw( croak carp );
