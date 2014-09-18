@@ -9,7 +9,7 @@ our $VERSION = '0.001001';
 
 use Path::Tiny;
 use Carp qw( croak carp );
-use Time::HiRes qw( gettimeofday tv_interval clock_gettime );
+use Time::HiRes qw( gettimeofday tv_interval );
 use IO::Handle;
 use List::Util qw( shuffle );
 
@@ -83,30 +83,31 @@ sub add_instance {
   return;
 }
 
-my $timing_methods = {
-  ## no critic (ValuesAndExpressions::RequireInterpolationOfMetachars);
-  'hires_wall' => {
-    start => q[my $start = [ gettimeofday ]],
-    stop  => q[my $stop = [ gettimeofday ]],
-    diff  => q[tv_interval( $start, [ gettimeofday ])],
-  },
-
-  # This one is hard to use as a default due to linux things.
+# These are hard to use as a default due to linux things.
+my $hires_gettime_methods = {
   'hires_cputime_process' => {
 
     # bits/time.h
     # CLOCK_PROCESS_CPUTIME_ID = 2
-    start => q[my $start = clock_gettime(2)],
-    stop  => q[my $stop  = clock_gettime(2)],
+    start => q[my $start = Time::HiRes::clock_gettime(2)],
+    stop  => q[my $stop  = Time::HiRes::clock_gettime(2)],
     diff  => q[ ( $stop - $start )],
   },
   'hires_cputime_thread' => {
 
     # bits/time.h
     # CLOCK_THREAD_CPUTIME_ID = 3
-    start => q[my $start = clock_gettime(3)],
-    stop  => q[my $stop  = clock_gettime(3)],
+    start => q[my $start = Time::HiRes::clock_gettime(3)],
+    stop  => q[my $stop  = Time::HiRes::clock_gettime(3)],
     diff  => q[ ( $stop - $start )],
+  },
+};
+my $timing_methods = {
+  ## no critic (ValuesAndExpressions::RequireInterpolationOfMetachars);
+  'hires_wall' => {
+    start => q[my $start = [ gettimeofday ]],
+    stop  => q[my $stop = [ gettimeofday ]],
+    diff  => q[tv_interval( $start, [ gettimeofday ])],
   },
 
   # These are all bad because they're very imprecise :(
@@ -126,6 +127,9 @@ my $timing_methods = {
     diff  => q[ ( $stop[1] - $start[1] ) ],
   },
 };
+if ( Time::HiRes->can('clock_gettime') ) {
+  $timing_methods = { %{$timing_methods}, %{$hires_gettime_methods} };
+}
 
 
 
