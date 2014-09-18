@@ -4,7 +4,7 @@ Benchmark::CSV - Report raw timing results in CSV-style format for advanced proc
 
 # VERSION
 
-version 0.001001
+version 0.001002
 
 # SYNOPSIS
 
