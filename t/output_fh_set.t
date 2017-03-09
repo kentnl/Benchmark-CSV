@@ -2,7 +2,7 @@
 use strict;
 use warnings;
 
-use Test::More;
+use Test::More tests => 6;
 
 # ABSTRACT: Test basic performance
 
@@ -43,6 +43,3 @@ my $csv = $tdir->child('out.csv');
   isnt( $err, 1, "Setting output_fh after finalized should fail" );
 
 }
-
-done_testing;
-

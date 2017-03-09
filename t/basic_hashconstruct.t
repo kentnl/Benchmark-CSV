@@ -2,7 +2,7 @@
 use strict;
 use warnings;
 
-use Test::More;
+use Test::More tests => 1;
 
 # ABSTRACT: Test basic performance
 
@@ -26,6 +26,3 @@ ok(
   },
   "Construct with a hashref"
 ) or diag $@;
-
-done_testing;
-
