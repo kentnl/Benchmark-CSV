@@ -20,7 +20,7 @@ name: Benchmark-CSV
 provides:
   Benchmark::CSV:
     file: lib/Benchmark/CSV.pm
-    version: '0.001002'
+    version: '0.001003'
 recommends:
   Path::Tiny: '0.058'
 requires:
@@ -36,4 +36,4 @@ resources:
   bugtracker: https://github.com/kentnl/Benchmark-CSV/issues
   homepage: https://github.com/kentnl/Benchmark-CSV
   repository: https://github.com/kentnl/Benchmark-CSV.git
-version: '0.001002'
+version: '0.001003'
