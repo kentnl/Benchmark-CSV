@@ -1,6 +1,6 @@
 Release history for Benchmark-CSV
 
-0.001002 2017-03-09T06:55:59Z 9b8cd66
+0.001002 2017-03-09T06:58:05Z f8f058f
  - BugFix: Avoid test failures with -Ddefault_inc_excludes_dot
 
  [Dependencies::Stats]

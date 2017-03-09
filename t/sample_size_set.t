@@ -2,7 +2,7 @@
 use strict;
 use warnings;
 
-use Test::More;
+use Test::More tests => 3;
 
 # ABSTRACT: Test basic performance
 
@@ -38,5 +38,3 @@ my $csv = $tdir->child('out.csv');
   isnt( $er, 1, "Setting sample size once finalised should bail" );
 
 }
-done_testing;
-
