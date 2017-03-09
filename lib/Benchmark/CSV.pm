@@ -4,7 +4,7 @@ use warnings;
 
 package Benchmark::CSV;
 
-our $VERSION = '0.001002';
+our $VERSION = '0.001003';
 
 use Path::Tiny;
 use Carp qw( croak carp );
