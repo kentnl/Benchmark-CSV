@@ -1,200 +1,28 @@
-NAME
-    Benchmark::CSV - Report raw timing results in CSV-style format for
-    advanced processing.
+Benchmark::CSV
 
-VERSION
-    version 0.001002
 
-SYNOPSIS
-      use Benchmark::CSV;
 
-      my $benchmark = Benchmark::CSV->new(
-        output => './test.csv',
-        sample_size => 10,
-      );
+INSTALLATION
 
-      $benchmark->add_instance( 'method_a' => sub {});
-      $benchmark->add_instance( 'method_b' => sub {});
+This is a Perl module distribution. It should be installed with whichever
+tool you use to manage your installation of Perl, e.g. any of
 
-      $benchmark->run_iterations(100_000);
+  cpanm .
+  cpan  .
+  cpanp -i .
 
-RATIONALE.
-    I've long found all the other bench-marking utilities well meaning, but
-    easily confusing.
+Consult http://www.cpan.org/modules/INSTALL.html for further instruction.
+Should you wish to install this module manually, the procedure is
 
-    My biggest misgiving is that they give you one, or two values which it
-    has decided is "the time" your code took, whether its an average, a
-    median, or some other algorithm, ( Such as in "Benchmark::Dumb" ), they
-    all amount to basically giving you a data point, which you have to take
-    for granted.
-
-    That data point may also change wildly between test runs due to computer
-    load or other factors.
-
-    Essentially, the flaw as I see it, is trying to convey what is
-    essentially a *spectrum* of results as a single point.
-
-    "Benchmark::Dumb" at least gives you variation data, but its rather hard
-    to compare and visualize the results it gives to gain meaningful
-    insight.
-
-    So, I looked to modeling the data differently, and happened to
-    accidentally throw some hand-collected benchmark data into a Google
-    Spreadsheet Histogram plot, and found it hugely enlightening on what was
-    really going on.
-
-    One recurring observation I noticed is code run-time seems to have a
-    very lop-sided distribution
-
-       |   ++
-       |   |++
-       |   | |
-       |   | |
-       |   | |
-       |   | +++
-       |   |   |
-       |  ++   ++++++++
-       |  +           +++++++++++++++++++++++
-     0 +-------------------------------------
-      0
-
-    Which suggests to me, that unlike many things people usually use
-    statistics for, where you have a bunch of things evenly on both sides of
-    the mode, code has an *inherent* minimum run time, which you might see
-    if your system has all factors in "ideal" conditions, and it has a
-    closely following *sub-optimal* but *common* run time, which I imagine
-    you see because the system can't deliver every cycle of code in perfect
-    situations every time, even the kernel is selfish and says "Well, if I
-    let your code have exactly 100% CPU for as long as you wanted it, I
-    doubt even kernel space would be able to do anything till you were quite
-    done" So observing the minimum time "AND" the median seem to me, useful
-    for comparing algorithm efficiency.
-
-    Observing the maximums is useful too, however, those values trend
-    towards being less useful, as they're likely to be impacted by CPU
-    randomness slowing things down.
-
-RATIONALE FOR DUMMIES
-    Graphs are pretty. I like graphs. Why not benchmark distribution
-    graphs!?
-
-METHODS
-  "add_instance"
-    Add a test block.
-
-      ->add_instance( name => sub { } );
-
-    NOTE: You can only add test instances prior to executing the tests.
-
-    After executing tests, the number of columns and the column headings
-    become "finalized".
-
-    This is because of how the CSV file is written in parallel with the test
-    batches.
-
-    CSV is written headers first, top to bottom, one column at a time.
-
-    So adding a new column is impossible after the headers have been written
-    without starting over.
-
-  "new"
-    Create a benchmark object.
-
-      my $instance = Benchmark::CSV->new( \%hash );
-      my $instance = Benchmark::CSV->new( %hash  );
-
-      %hash = {
-        sample_size => # number of times to call each sub in a sample
-        output      => # A file path to write to
-        output_fh   => # An output filehandle to write to
-      };
-
-  "sample_size"
-    The number of times to call each sub in a "Sample".
-
-    A sample is a block of timed code.
-
-    For instance:
-
-      ->sample_size(4);
-      ->add_instance( x => $y );
-      ->run_iterations(40);
-
-    This will create a timer block similar to below.
-
-      my $start = time();
-      # Unrolled, because benchmarking indicated unrolling was faster.
-      $y->();
-      $y->();
-      $y->();
-      $y->();
-      return time() - $start;
-
-    That block will then be called 10 times ( 40 total code executions
-    batched into 10 groups of 4 ) and return 10 time values.
-
-   get:"sample_size"
-      my $size = $bench->sample_size;
-
-    Value will default to 1 if not passed during construction.
-
-   set:"sample_size"
-      $bench->sample_size(10);
-
-    Can be performed at any time prior, but not after running tests.
-
-  "output_fh"
-    An output "filehandle" to write very sloppy "CSV" data to.
-
-    Results will be in Columns, sorted by column name alphabetically.
-
-    "output_fh" defaults to *STDOUT, or opens a file passed to the
-    constructor as "output" for writing.
-
-   get:"output_fh"
-      my $fh = $bench->output_fh;
-
-    Either *STDOUT or an opened "filehandle".
-
-   set:"output_fh"
-      $bench->output_fh( \*STDERR );
-
-    Can be set at any time prior, but not after, running tests.
-
-  "run_iterations"
-    Executes the attached tests "n" times in batches of "sample_size".
-
-      ->run_iterations( 10_000_000 );
-
-    Because of how it works, simply spooling results at the bottom of the
-    data file, you can call this method multiple times as necessary and
-    inject more results.
-
-    For instance, this could be used to give a progress report.
-
-      *STDOUT->autoflush(1);
-      print "[__________]\r[";
-      for ( 1 .. 10 ) {
-        $bench->run_iterations( 1_000_000 );
-        print "#";
-      }
-      print "]\n";
-
-    This is also how you can do timed batches:
-
-      my $start = [gettimeofday];
-      # Just execute as much as possible until 10 seconds of wallclock pass.
-      while( tv_interval( $start, [ gettimeofday ]) < 10 ) {
-        $bench->run_iterations( 1_000 );
-      }
-
-AUTHOR
-    Kent Fredric <kentnl@cpan.org>
+  perl Makefile.PL
+  make
+  make test
+  make install
 
 COPYRIGHT AND LICENSE
-    This software is copyright (c) 2014 by Kent Fredric
-    <kentfredric@gmail.com>.
 
-    This is free software; you can redistribute it and/or modify it under
-    the same terms as the Perl 5 programming language system itself.
+This software is copyright (c) 2017 by Kent Fredric
+<kentfredric@gmail.com>.
 
+This is free software; you can redistribute it and/or modify it under
+the same terms as the Perl 5 programming language system itself.
