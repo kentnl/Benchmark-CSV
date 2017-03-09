@@ -20,7 +20,7 @@
          },
          "requires" : {
             "ExtUtils::MakeMaker" : "0",
-            "perl" : "5.008"
+            "perl" : "5.006"
          }
       },
       "develop" : {
@@ -106,7 +106,6 @@
             "Time::HiRes" : "0",
             "perl" : "5.008",
             "strict" : "0",
-            "utf8" : "0",
             "warnings" : "0"
          }
       },
